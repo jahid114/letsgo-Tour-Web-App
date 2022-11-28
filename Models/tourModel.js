@@ -9,14 +9,9 @@ const tourSchema = mongoose.Schema(
       required: [true, 'A tour must have a name'],
       unique: true,
       trim: true,
-      minlength: [
-        10,
-        'A Tour name should have minimum 10 character',
-      ],
-      maxlength: [
-        40,
-        "A Tour name shouldn't have more than 40 character",
-      ],
+      minlength: [10, 'A Tour name should have minimum 10 character'],
+      // eslint-disable-next-line quotes
+      maxlength: [40, "A Tour name shouldn't have more than 40 character"],
       // validate: [
       //   validator.isAlpha,
       //   'Tour name should only contain characters',
@@ -32,16 +27,12 @@ const tourSchema = mongoose.Schema(
       required: [true, 'Difficulty must be added'],
       enum: {
         values: ['easy', 'medium', 'difficult'],
-        message:
-          'Difficulty is either: easy, medium, difficult',
+        message: 'Difficulty is either: easy, medium, difficult',
       },
     },
     maxGroupSize: {
       type: Number,
-      required: [
-        true,
-        'A tour must have a Maximum group size',
-      ],
+      required: [true, 'A tour must have a Maximum group size'],
     },
     ratingsAverage: {
       type: Number,
@@ -81,8 +72,7 @@ const tourSchema = mongoose.Schema(
         validator: function (val) {
           return val < this.price;
         },
-        message:
-          'Discount price ({VALUE}) should be less than regular price',
+        message: 'Discount price ({VALUE}) should be less than regular price',
       },
     },
     secretTour: {
@@ -120,9 +110,7 @@ tourSchema.pre(/^find/, function (next) {
 
 tourSchema.post(/^find/, function (docs, next) {
   // eslint-disable-next-line no-console
-  console.log(
-    `Query took ${Date.now() - this.start} milisecond`
-  );
+  console.log(`Query took ${Date.now() - this.start} milisecond`);
   next();
 });
 

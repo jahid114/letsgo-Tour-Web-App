@@ -10,6 +10,29 @@ const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
+
+const createSendToken = (res, user, statusCode) => {
+  const token = signToken(user._id);
+
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true,
+  };
+
+  if (process.env.NODE_ENV.trim() === 'production') {
+    cookieOptions.secure = true;
+  }
+  user.password = undefined;
+
+  res.cookie('jwt', token, cookieOptions);
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+    data: user,
+  });
+};
 exports.signup = catchAsync(async (req, res) => {
   const newUser = await User.create({
     name: req.body.name,
@@ -18,13 +41,7 @@ exports.signup = catchAsync(async (req, res) => {
     passwordConfirm: req.body.passwordConfirm,
     passwordChangedAt: req.body.passwordChangedAt,
   });
-
-  const token = signToken(newUser._id);
-  res.status(201).json({
-    status: 'Succesful',
-    token,
-    data: newUser,
-  });
+  createSendToken(res, newUser, 201);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -42,11 +59,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
   // If everything ok, end token to client
 
-  const token = signToken(user._id);
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+  createSendToken(res, user, 200);
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -167,19 +180,30 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
   // 3) Update changedPasswordAt property for the user
   // 4) Log the user in, send JWT
-  const token = signToken(user._id);
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+  createSendToken(res, user, 200);
 });
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
+  // check if user provided the current and updating password
+  if (
+    !req.body.password ||
+    !req.body.passwordConfirm ||
+    !req.body.passwordCurrent
+  ) {
+    return next(
+      new ApiError(
+        'This route is not for password updates. Please use /updateMyPassword.',
+        400
+      )
+    );
+  }
   // 1) Get user from collection
   const user = await User.findById(req.user.id).select('+password');
 
   // 2) Check if POSTed current password is correct
-  if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
+  if (
+    !(await user.isCorrectPassword(req.body.passwordCurrent, user.password))
+  ) {
     return next(new ApiError('Your current password is wrong.', 401));
   }
 
@@ -190,9 +214,5 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   // User.findByIdAndUpdate will NOT work as intended!
 
   // 4) Log user in, send JWT
-  const token = signToken(user._id);
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+  createSendToken(res, user, 200);
 });
