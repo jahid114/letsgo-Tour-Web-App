@@ -3,7 +3,9 @@ const express = require('express');
 const router = express.Router();
 const tourController = require('../Controller/tourController');
 const authController = require('../Controller/authController');
+const reviewRouter = require('./reviewRoutes');
 
+router.route('/:tourId/review', reviewRouter);
 router.route('/monthly-plan/:year').get(tourController.monthlyPlan);
 router
   .route('/top-5-cheap-tour')

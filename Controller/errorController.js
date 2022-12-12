@@ -41,12 +41,8 @@ const handleDuplicateErrorDB = (err, req) => {
 };
 
 const handleValidatonError = (err) => {
-  const errors = Object.values(err.errors).map(
-    (element) => element.message
-  );
-  const message = `Invalid input data. ${errors.join(
-    '. '
-  )}`;
+  const errors = Object.values(err.errors).map((element) => element.message);
+  const message = `Invalid input data. ${errors.join('. ')}`;
   return new ApiError(message, 400);
 };
 
@@ -54,10 +50,7 @@ const handleJWTError = () =>
   new ApiError('Invalid token, Please login again', 401);
 
 const handleJWTExpiredError = () =>
-  new ApiError(
-    'Your token has expired, Please login again',
-    401
-  );
+  new ApiError('Your token has expired, Please login again', 401);
 
 module.exports = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
