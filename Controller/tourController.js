@@ -1,8 +1,63 @@
+const multer = require('multer');
+const sharp = require('sharp');
 const Tour = require('../Models/tourModel');
-const ApiError = require('../utility/apiError');
-const ApiFeatures = require('../utility/apiFeatures');
 const catchAsync = require('../utility/catchAsync');
+const handler = require('./factoryHandler');
+const AppError = require('../utility/apiError');
 
+const multerStorage = multer.memoryStorage();
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(new AppError('Not an Image! Please upload an image', 400), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+exports.uploadTourPhoto = upload.fields([
+  { name: 'imageCover', maxCount: 1 },
+  { name: 'images', maxCount: 3 },
+]);
+
+exports.resizeTourPhoto = catchAsync(async (req, res, next) => {
+  if (req.files.imageCover) {
+    // console.log(req.files.imageCover);
+    // req.file.filename = `user-${req.user.id}-${Date.now()}.jpg`;
+    const imageCoverFileName = `tour-${req.params.id}-${Date.now()}-cover.jpeg`;
+    // Cover Image
+    await sharp(req.files.imageCover[0].buffer)
+      .resize(2000, 1333)
+      .toFormat('jpeg')
+      .jpeg({ quality: 90 })
+      .toFile(`public/img/tours/${imageCoverFileName}`);
+
+    req.body.imageCover = imageCoverFileName;
+  }
+
+  // Other Images
+  if (req.files.images) {
+    req.body.images = [];
+    await Promise.all(
+      req.files.images.map(async (file, i) => {
+        const filename = `tour-${req.params.id}-${Date.now()}-${i + 1}.jpeg`;
+        await sharp(file.buffer)
+          .resize(2000, 1333)
+          .toFormat('jpeg')
+          .jpeg({ quality: 90 })
+          .toFile(`public/img/tours/${filename}`);
+
+        req.body.images.push(filename);
+      })
+    );
+  }
+  next();
+});
 exports.aliasCheapTour = (req, res, next) => {
   req.query.limit = '5';
   req.query.sort = '-ratingsAverage,price';
@@ -10,73 +65,15 @@ exports.aliasCheapTour = (req, res, next) => {
   next();
 };
 
-exports.getAllTours = catchAsync(async (req, res, next) => {
-  // Query
-  const tourQuery = new ApiFeatures(Tour.find(), req.query)
-    .filter()
-    .sort()
-    .selectFields()
-    .pagination();
-  // Execute query
-  const tours = await tourQuery.query;
-  // Send Response
-  res.status(200).json({
-    status: 'success',
-    results: tours.length,
-    data: {
-      tours,
-    },
-  });
-});
+exports.getAllTours = handler.getAll(Tour);
 
-exports.getTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findById(req.params.id);
-  if (!tour) {
-    return next(new ApiError('No tour found with that ID', 404));
-  }
-  res.status(200).json({
-    status: 'success',
-    data: {
-      tour,
-    },
-  });
-});
+exports.getTour = handler.getOne(Tour, { path: 'reviews' });
 
-exports.addNewTour = catchAsync(async (req, res, next) => {
-  const newTour = await Tour.create({
-    ...req.body,
-  });
-  res.status(201).json({
-    status: 'success',
-    data: {
-      tour: newTour,
-    },
-  });
-});
+exports.addNewTour = handler.createOne(Tour);
 
-exports.updateTour = catchAsync(async (req, res, next) => {
-  const updatedTour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
-  if (!updatedTour) {
-    return next(new ApiError('No tour found with that ID', 404));
-  }
-  res.status(200).json({
-    status: 'success',
-    data: {
-      updatedTour,
-    },
-  });
-});
+exports.updateTour = handler.updateOne(Tour);
 
-exports.deleteTour = catchAsync(async (req, res, next) => {
-  const deletedTour = await Tour.findByIdAndDelete(req.params.id);
-  if (!deletedTour) {
-    return next(new ApiError('No tour found with that ID', 404));
-  }
-  res.status(204).send(null);
-});
+exports.deleteTour = handler.deleteOne(Tour);
 
 exports.tourStatistics = catchAsync(async (req, res, next) => {
   const stats = await Tour.aggregate([

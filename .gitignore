@@ -2,6 +2,7 @@ node_modules
 .eslintrc.json
 .prettierrc
 config.env
-public\img
+public/img/*
 dev-data
 import-dev-data
+public/maptest.html

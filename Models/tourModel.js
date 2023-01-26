@@ -49,7 +49,7 @@ const tourSchema = mongoose.Schema(
       required: [true, 'Summary must be added'],
       trim: true,
     },
-    descripton: String,
+    description: String,
     imageCover: {
       type: String,
       required: [true, 'Cover photo must be added'],
@@ -116,8 +116,18 @@ const tourSchema = mongoose.Schema(
   }
 );
 
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+tourSchema.index({ startLocation: '2dsphere' });
+
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
+});
+
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id',
 });
 
 // Document middleware
