@@ -1,7 +1,9 @@
 node_modules
 .eslintrc.json
 .prettierrc
+.cache
 config.env
+.gitignore
 public/img/*
 dev-data
 import-dev-data
