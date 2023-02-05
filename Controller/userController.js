@@ -104,9 +104,3 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
     data: null,
   });
 });
-exports.addNewUser = (req, res) => {
-  res.status(500).json({
-    status: 'Fail',
-    message: 'Under Construction',
-  });
-};

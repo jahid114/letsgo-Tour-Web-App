@@ -83,6 +83,7 @@ exports.updateUserData = catchAsync(async (req, res, next) => {
     {
       name: req.body.name,
       email: req.body.email,
+      photo: req.body.photo,
     },
     {
       new: true,
