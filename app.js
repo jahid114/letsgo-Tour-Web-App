@@ -13,6 +13,7 @@ const ApiError = require('./utility/apiError');
 const tourRouter = require('./Routes/tourRoutes');
 const userRouter = require('./Routes/userRoutes');
 const reviewRouter = require('./Routes/reviewRoutes');
+const bookingRouter = require('./Routes/bookingRoutes');
 const viewRouter = require('./Routes/viewRoutes');
 const errorHandler = require('./Controller/errorController');
 
@@ -74,6 +75,7 @@ if (process.env.NODE_ENV === 'development') {
 app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/bookings', bookingRouter);
 app.use('/api/v1/reviews', reviewRouter);
 app.all('*', (req, res, next) => {
   next(new ApiError(`Can't find the ${req.originalUrl} on this server!`, 404));
