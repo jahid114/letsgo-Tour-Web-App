@@ -6,15 +6,18 @@ import { signup } from './signup';
 import { updateSettings } from './updateSettings';
 import { bookTour } from './stripe';
 import { showAlert } from './alerts';
+import { reviewFunc } from './review';
 
 // DOM ELEMENTS
 const mapBox = document.getElementById('map');
 const loginForm = document.querySelector('.form--login');
 const signupForm = document.querySelector('.form--signup');
+const reviewForm = document.querySelector('.form--review');
 const logOutBtn = document.querySelector('.nav__el--logout');
 const userDataForm = document.querySelector('.form-user-data');
 const userPasswordForm = document.querySelector('.form-user-password');
 const bookBtn = document.getElementById('book-tour');
+const reviewbtn = document.getElementById('review-btn');
 
 // DELEGATION
 if (mapBox) {
@@ -85,6 +88,20 @@ if (bookBtn)
     const { tourId } = e.target.dataset;
     bookTour(tourId);
   });
+
+if (reviewbtn) {
+  reviewbtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const reviewText = document.getElementById('reviewText').value;
+    const rating = document.getElementById('rating').value;
+    console.log(reviewText, rating);
+    const { tourId } = e.target.dataset;
+    console.log(tourId);
+    document.getElementById('reviewText').value = '';
+    document.getElementById('rating').value = '';
+    await reviewFunc(tourId, reviewText, rating);
+  });
+}
 
 const alertMessage = document.querySelector('body').dataset.alert;
 if (alertMessage) showAlert('success', alertMessage, 20);
