@@ -15,6 +15,7 @@ export const reviewFunc = async (tourId, review, rating) => {
     });
     console.log(res);
     if (res.data.status === 'success') {
+      window.location.reload();
       showAlert('success', 'Review Added Successfully');
     }
   } catch (err) {

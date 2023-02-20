@@ -12783,6 +12783,7 @@ function () {
           console.log(res);
 
           if (res.data.status === 'success') {
+            window.location.reload();
             (0, _alerts.showAlert)('success', 'Review Added Successfully');
           }
 
@@ -13241,7 +13242,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "63004" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55283" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
