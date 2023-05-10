@@ -1,2 +1,2 @@
-# letsgoTourApi
-API for a Tours and Travels Web app
+# letsgo Tour Web App
+A Tours and Travels Web app
